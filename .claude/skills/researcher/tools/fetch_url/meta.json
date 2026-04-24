@@ -1,0 +1,54 @@
+{
+  "name": "fetch_url",
+  "description": "HTTP GET a URL with a timeout and size cap. Returns status, content-type, and body text (truncated to 500KB).",
+  "inputSchema": {
+    "type": "object",
+    "required": [
+      "url"
+    ],
+    "properties": {
+      "url": {
+        "type": "string",
+        "description": "Absolute URL to fetch"
+      },
+      "headers": {
+        "type": "object",
+        "additionalProperties": {
+          "type": "string"
+        }
+      },
+      "timeoutMs": {
+        "type": "number",
+        "default": 10000
+      }
+    }
+  },
+  "outputSchema": {
+    "type": "object",
+    "properties": {
+      "status": {
+        "type": "number"
+      },
+      "contentType": {
+        "type": "string"
+      },
+      "text": {
+        "type": "string"
+      },
+      "truncated": {
+        "type": "boolean"
+      },
+      "url": {
+        "type": "string"
+      }
+    }
+  },
+  "usageHints": [
+    "Use for raw HTTP fetches when you need the unmodified response body",
+    "Prefer read_url when you want clean markdown instead of raw HTML"
+  ],
+  "dependsOn": [],
+  "createdAt": "2026-04-10T00:00:00.000Z",
+  "runs": 1,
+  "successes": 1
+}

@@ -1,0 +1,52 @@
+{
+  "name": "read_url",
+  "description": "Fetch a URL and return LLM-ready markdown. Uses Jina Reader (https://r.jina.ai/<url>) by default — no API key needed. Falls back to local fetch_url + extract_readable if Jina fails.",
+  "inputSchema": {
+    "type": "object",
+    "required": [
+      "url"
+    ],
+    "properties": {
+      "url": {
+        "type": "string"
+      },
+      "timeoutMs": {
+        "type": "number",
+        "default": 15000
+      }
+    }
+  },
+  "outputSchema": {
+    "type": "object",
+    "properties": {
+      "title": {
+        "type": "string"
+      },
+      "markdown": {
+        "type": "string"
+      },
+      "source": {
+        "type": "string",
+        "enum": [
+          "jina",
+          "local"
+        ]
+      },
+      "url": {
+        "type": "string"
+      }
+    }
+  },
+  "usageHints": [
+    "Default choice for reading a web page — returns clean markdown",
+    "Use this instead of fetch_url when you want content you can summarize directly",
+    "Automatically falls back to local extraction if Jina Reader is unreachable"
+  ],
+  "dependsOn": [
+    "fetch_url",
+    "extract_readable"
+  ],
+  "createdAt": "2026-04-10T00:00:00.000Z",
+  "runs": 83,
+  "successes": 83
+}

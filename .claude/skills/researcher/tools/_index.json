@@ -1,0 +1,47 @@
+[
+  {
+    "name": "extract_readable",
+    "description": "Convert raw HTML into clean markdown plus a list of links. Uses cheerio + turndown locally — no network.",
+    "hints": [
+      "Use after fetch_url when the response body is raw HTML and you want LLM-friendly markdown"
+    ],
+    "runs": 0,
+    "successes": 0,
+    "createdAt": "2026-04-10T00:00:00.000Z"
+  },
+  {
+    "name": "fetch_url",
+    "description": "HTTP GET a URL with a timeout and size cap. Returns status, content-type, and body text (truncated to 500KB).",
+    "hints": [
+      "Use for raw HTTP fetches when you need the unmodified response body",
+      "Prefer read_url when you want clean markdown instead of raw HTML"
+    ],
+    "runs": 1,
+    "successes": 1,
+    "createdAt": "2026-04-10T00:00:00.000Z"
+  },
+  {
+    "name": "read_url",
+    "description": "Fetch a URL and return LLM-ready markdown. Uses Jina Reader (https://r.jina.ai/<url>) by default — no API key needed. Falls back to local fetch_url + extract_readable if Jina fails.",
+    "hints": [
+      "Default choice for reading a web page — returns clean markdown",
+      "Use this instead of fetch_url when you want content you can summarize directly",
+      "Automatically falls back to local extraction if Jina Reader is unreachable"
+    ],
+    "runs": 83,
+    "successes": 83,
+    "createdAt": "2026-04-10T00:00:00.000Z"
+  },
+  {
+    "name": "search_web",
+    "description": "Search the web via a tiered provider chain. Default: DuckDuckGo (keyless). Upgrades automatically if TAVILY_API_KEY, EXA_API_KEY, BRAVE_API_KEY, PERPLEXITY_API_KEY, FIRECRAWL_API_KEY, or JINA_API_KEY is set. Pass `provider` to override.",
+    "hints": [
+      "Primary tool for finding sources on any web topic",
+      "Returns which provider served the result so you can weight result quality",
+      "Use provider='exa' for semantic 'find pages like X' search, 'perplexity' when you want an answer + citations"
+    ],
+    "runs": 50,
+    "successes": 50,
+    "createdAt": "2026-04-10T00:00:00.000Z"
+  }
+]

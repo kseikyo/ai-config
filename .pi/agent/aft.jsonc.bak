@@ -1,0 +1,35 @@
+{
+  // "minimal" | "recommended" | "all"
+  "tool_surface": "recommended",
+
+  // Disable hoisted same-name tools that degrade Pi built-in rendering.
+  // Keep AFT's additional tools, but let Pi own read/write/edit rendering.
+  "disabled_tools": ["edit", "write", "read"],
+
+  // AFT handles formatting — agentic-harness format-on-edit is disabled
+  "format_on_edit": true,
+
+  // "off" | "syntax" (tree-sitter parse) | "full" (LSP typecheck)
+  // Off — inline diagnostics are noise mid-edit. Full typecheck runs at
+  // agent_end via agentic-harness batch typecheck (after all changes are applied).
+  "validate_on_edit": "off",
+
+  // Keep project-root restriction off (matches pi default)
+  "restrict_to_project_root": false,
+
+  // Enable trigram-indexed grep/glob
+  "experimental_search_index": true,
+
+  // Enable semantic search (local ONNX embeddings)
+  "experimental_semantic_search": true,
+
+  "formatter": {
+    "typescript": "biome",
+    "javascript": "biome",
+    "python": "ruff",
+    "rust": "rustfmt"
+  },
+  "checker": {
+    "typescript": "biome"
+  }
+}

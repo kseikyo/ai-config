@@ -1,0 +1,31 @@
+{
+  "name": "extract_readable",
+  "description": "Convert raw HTML into clean markdown plus a list of links. Uses cheerio + turndown locally — no network.",
+  "inputSchema": {
+    "type": "object",
+    "required": ["html"],
+    "properties": {
+      "html": { "type": "string" },
+      "baseUrl": { "type": "string", "description": "Used to resolve relative links" }
+    }
+  },
+  "outputSchema": {
+    "type": "object",
+    "properties": {
+      "title": { "type": "string" },
+      "markdown": { "type": "string" },
+      "links": {
+        "type": "array",
+        "items": { "type": "object", "properties": { "href": { "type": "string" }, "text": { "type": "string" } } }
+      }
+    }
+  },
+  "usageHints": [
+    "Use after fetch_url when the response body is raw HTML and you want LLM-friendly markdown",
+    "Local fallback for read_url when Jina Reader is unavailable"
+  ],
+  "dependsOn": [],
+  "createdAt": "2026-04-10T00:00:00.000Z",
+  "runs": 0,
+  "successes": 0
+}

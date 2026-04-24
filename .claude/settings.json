@@ -1,0 +1,270 @@
+{
+  "env": {
+    "CLAUDE_AUTOCOMPACT_PCT_OVERRIDE": "55"
+  },
+  "permissions": {
+    "allow": [
+      "WebFetch(domain:raw.githubusercontent.com)",
+      "WebFetch(domain:github.com)",
+      "Bash(bd init:*)",
+      "Bash(bd doctor:*)",
+      "Bash(bd create:*)",
+      "Bash(bd dep add:*)",
+      "Bash(bd ready:*)",
+      "Bash(bd update:*)",
+      "Bash(bd close:*)",
+      "Bash(bd list:*)",
+      "Bash(docker-compose up:*)",
+      "Bash(uv run python:*)",
+      "Bash(cat:*)",
+      "Bash(docker exec:*)",
+      "Bash(timeout 5 uv run:*)",
+      "Bash(timeout 8 uv run:*)",
+      "Bash(python3:*)",
+      "Bash(pkill:*)",
+      "Bash(bd show:*)",
+      "Bash(gh --version:*)",
+      "Bash(railway:*)",
+      "Bash(gh auth status:*)",
+      "Bash(gh repo create:*)",
+      "Bash(git add:*)",
+      "Bash(git commit:*)",
+      "Bash(timeout 10 uv run:*)",
+      "WebSearch",
+      "WebFetch(domain:docs.railway.com)",
+      "mcp__context7__resolve-library-id",
+      "mcp__context7__get-library-docs",
+      "Bash(git push:*)",
+      "Bash(bd sync:*)",
+      "Bash(gh run watch:*)",
+      "Bash(gh run view:*)",
+      "Bash(gh secret list:*)",
+      "Bash(gh workflow run:*)",
+      "Bash(gh run list:*)",
+      "WebFetch(domain:hostarmada.com)",
+      "WebFetch(domain:www.hetzner.com)",
+      "WebFetch(domain:www.digitalocean.com)",
+      "WebFetch(domain:www.vultr.com)",
+      "WebFetch(domain:docs.dokploy.com)",
+      "WebFetch(domain:docs.docker.com)",
+      "WebFetch(domain:api.github.com)",
+      "mcp__serena__list_dir",
+      "mcp__serena__activate_project",
+      "mcp__sequential-thinking__sequentialthinking",
+      "mcp__serena__list_memories",
+      "Bash(bv --robot-triage:*)",
+      "Bash(find:*)",
+      "Bash(ls:*)",
+      "Bash(docker search:*)",
+      "WebFetch(domain:discord.js.org)",
+      "WebFetch(domain:www.npmjs.com)",
+      "Bash(docker-compose build:*)",
+      "Bash(docker-compose logs:*)",
+      "Bash(docker ps:*)",
+      "Bash(docker-compose restart:*)",
+      "Bash(sqlite3:*)",
+      "mcp__serena__get_symbols_overview",
+      "Bash(grep:*)",
+      "Bash(docker-compose ps:*)",
+      "mcp__serena__write_memory",
+      "Bash(docker network create:*)",
+      "Bash(curl:*)",
+      "Bash(docker-compose:*)",
+      "Bash(bv close:*)",
+      "Skill(sc:cleanup)",
+      "Bash(docker logs:*)",
+      "Skill(sc:spec-panel)",
+      "Bash(timeout 60 docker logs:*)",
+      "mcp__serena__find_referencing_symbols",
+      "Bash(uv run ruff check:*)",
+      "Bash(pip show:*)",
+      "Bash(uvx ruff check:*)",
+      "Bash(uvx ruff format:*)",
+      "Bash(pnpm exec tsc:*)",
+      "mcp__serena__search_for_pattern",
+      "mcp__serena__find_symbol",
+      "mcp__serena__insert_before_symbol",
+      "mcp__serena__replace_symbol_body",
+      "Bash(redis-cli:*)",
+      "mcp__serena__read_memory",
+      "Bash(bd link --help:*)",
+      "Bash(pnpm test)",
+      "Bash(pnpm install:*)",
+      "mcp__serena__initial_instructions",
+      "mcp__serena__check_onboarding_performed",
+      "mcp__serena__think_about_collected_information",
+      "Bash(docker volume:*)",
+      "mcp__serena__get_current_config",
+      "Bash(git pull:*)",
+      "Bash(git show:*)",
+      "mcp__serena__insert_after_symbol",
+      "Bash(gh pr list:*)",
+      "Bash(git fetch:*)",
+      "Bash(git merge-base:*)",
+      "Bash(open -a OrbStack:*)",
+      "Bash(uv run pytest:*)",
+      "Bash(uv sync:*)",
+      "Bash(uv pip install:*)",
+      "Bash(PYTHONPATH=src uv run pytest:*)",
+      "mcp__serena__edit_memory",
+      "WebFetch(domain:www.aihero.dev)",
+      "WebFetch(domain:x.com)",
+      "mcp__serena__find_file",
+      "Bash(bd start:*)",
+      "Bash(bash -n:*)",
+      "Bash(source scripts/ralph.sh)",
+      "Bash(uv run pyright:*)"
+    ],
+    "defaultMode": "plan"
+  },
+  "hooks": {
+    "PreCompact": [
+      {
+        "matcher": "",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bd prime"
+          }
+        ]
+      },
+      {
+        "matcher": "",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash ~/.claude/hooks/precompact-handoff.sh"
+          }
+        ]
+      }
+    ],
+    "SessionStart": [
+      {
+        "matcher": "",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bd prime"
+          }
+        ]
+      },
+      {
+        "matcher": "",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash -lc 'command -v ah >/dev/null && ah dispatch claude-code.session_start || true'"
+          }
+        ]
+      }
+    ],
+    "PreToolUse": [
+      {
+        "matcher": "Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash ~/.claude/hooks/block-dangerous-git.sh"
+          }
+        ]
+      },
+      {
+        "matcher": "Edit|Write|Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash -lc 'command -v ah >/dev/null && ah dispatch claude-code.pretool || true'"
+          }
+        ]
+      }
+    ],
+    "UserPromptSubmit": [
+      {
+        "matcher": "",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash ~/.claude/hooks/detect-research.sh",
+            "timeout": 3,
+            "statusMessage": "Checking research intent..."
+          }
+        ]
+      },
+      {
+        "matcher": "",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash -lc 'command -v ah >/dev/null && ah dispatch claude-code.user_prompt_submit || true'"
+          }
+        ]
+      }
+    ],
+    "PostToolUse": [
+      {
+        "matcher": "Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash ~/.claude/hooks/strip-claude-coauthor.sh"
+          }
+        ]
+      },
+      {
+        "matcher": "Edit|Write|Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash -lc 'command -v ah >/dev/null && ah dispatch claude-code.posttool || true'"
+          }
+        ]
+      }
+    ],
+    "SessionEnd": [
+      {
+        "matcher": "",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash -lc 'command -v ah >/dev/null && ah dispatch claude-code.session_end || true'"
+          }
+        ]
+      }
+    ]
+  },
+  "statusLine": {
+    "type": "command",
+    "command": "bash ~/.claude/statusline-command.sh"
+  },
+  "enabledPlugins": {
+    "dev-browser@dev-browser-marketplace": true,
+    "document-skills@anthropic-agent-skills": true,
+    "example-skills@anthropic-agent-skills": false,
+    "pyright-lsp@claude-plugins-official": true,
+    "typescript-lsp@claude-plugins-official": true,
+    "vscode-html-css@claude-code-lsps": true,
+    "vtsls@claude-code-lsps": true,
+    "rust-analyzer-lsp@claude-plugins-official": true,
+    "caveman@caveman": true
+  },
+  "extraKnownMarketplaces": {
+    "caveman": {
+      "source": {
+        "source": "github",
+        "repo": "JuliusBrussee/caveman"
+      }
+    }
+  },
+  "effortLevel": "high",
+  "promptSuggestionEnabled": false,
+  "voiceEnabled": true,
+  "mcpServers": {
+    "mcp-agent-mail": {
+      "headers": {
+        "Authorization": "Bearer __REDACTED__"
+      },
+      "type": "http",
+      "url": "http://127.0.0.1:8765/mcp/"
+    }
+  }
+}

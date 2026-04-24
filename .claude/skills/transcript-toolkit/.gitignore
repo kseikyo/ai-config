@@ -1,0 +1,10 @@
+meetings/
+profiles/gestay-sync/
+*.pyc
+__pycache__/
+.env
+.DS_Store
+*.log
+*-fixed.md
+*-final.md
+.sisyphus/

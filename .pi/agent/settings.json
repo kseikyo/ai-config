@@ -1,0 +1,19 @@
+{
+  "lastChangelogVersion": "0.69.0",
+  "defaultProvider": "openai-codex",
+  "defaultModel": "gpt-5.4",
+  "defaultThinkingLevel": "medium",
+  "packages": [
+    "npm:@cortexkit/aft-pi@0.14.1"
+  ],
+  "skills": [
+    "~/.claude/skills"
+  ],
+  "enableSkillCommands": true,
+  "hideThinkingBlock": false,
+  "editorPaddingX": 0,
+  "treeFilterMode": "no-tools",
+  "compaction": {
+    "enabled": true
+  }
+}
