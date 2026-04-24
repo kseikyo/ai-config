@@ -75,29 +75,31 @@ git diff                       # review before committing
 
 ## Visibility recommendation
 
-**private-ready only.**
+**public-safe** after the final sanitization pass reflected in this repo.
 
-The staged tree passes the local backstop scan, but the content is
-intentionally personal:
+Current safeguards:
 
-- `CLAUDE.md` encodes personal workflow preferences.
-- `settings.json` `permissions.allow` exposes the exact tool/command
-  surface used locally — not sensitive, but more information than
-  needed for a public share.
-- Skills include project-specific prompts and research workflows.
+- private/stateful content such as sessions, transcripts, telemetry,
+  caches, runtime logs, and local histories is excluded
+- known sensitive headers in `.claude/settings.json` are rewritten to
+  `Bearer __REDACTED__`
+- exporter rules deny previously flagged skill content and runtime
+  artifacts
+- `scripts/scan.sh` fails closed on surviving secret-like values,
+  absolute home paths, and public IPv4s
 
-Keep this repo private by default. If you want a public-safe cut, run
-an additional pass: strip `permissions.allow`, replace `CLAUDE.md` with
-a redacted version, and audit each skill's `SKILL.md` for project names.
+This repository is intended to contain shareable configuration only.
+If you add new skills, extensions, or settings, rerun the exporter and
+scanner before publishing updates.
 
-## Next manual steps (not executed automatically)
+## Publish workflow
 
 ```bash
-# create a private GitHub repo WITHOUT pushing yet:
-#   gh repo create <you>/ai-config --private --source . --remote origin
-# then push:
-#   git push -u origin main
+python3 scripts/export.py
+./scripts/scan.sh
+git add -A
+git commit -m "Refresh sanitized AI config"
+git push
 ```
 
-These are listed here for reference — the exporter deliberately stops
-before any remote publish.
+If `scripts/scan.sh` fails, review and redact before pushing.
