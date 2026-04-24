@@ -11,6 +11,7 @@ Pipeline (inspired by pi-share-hf):
 
 Fail-closed: unknown files under allow-list dirs default to EXCLUDE.
 """
+
 from __future__ import annotations
 
 import json
@@ -46,7 +47,15 @@ CLAUDE_ALLOW_DIRS = [
 # Names inside allow dirs that must still be excluded
 CLAUDE_DIR_DENY = {
     "hooks": {"strip-claude-coauthor.log"},
-    "skills": {".DS_Store", ".pytest_cache", ".ruff_cache", ".sisyphus"},
+    "skills": {
+        ".DS_Store",
+        ".pytest_cache",
+        ".ruff_cache",
+        ".sisyphus",
+        ".serena",
+        "transcript-toolkit",
+        "dokploy-db-create",
+    },
 }
 
 # Directory names that must NEVER appear in the export at any depth.
@@ -73,11 +82,14 @@ GLOBAL_DIR_DENY = {
     ".vscode",
     "coverage",
     ".nyc_output",
+    ".runs",
+    "logs",
 }
 
 GLOBAL_FILE_DENY = {
     ".DS_Store",
     ".python-version",
+    "bun.lock",
 }
 
 PI_ALLOW_PATHS = [
@@ -106,20 +118,30 @@ REDACTED = "__REDACTED__"
 # High-signal patterns — always strip
 TOKEN_PATTERNS = [
     # generic 40+ hex/base64-ish opaque tokens on bearer lines
-    (re.compile(r'("Authorization"\s*:\s*")Bearer\s+[^"]+(")'), r"\1Bearer " + REDACTED + r"\2"),
+    (
+        re.compile(r'("Authorization"\s*:\s*")Bearer\s+[^"]+(")'),
+        r"\1Bearer " + REDACTED + r"\2",
+    ),
     (re.compile(r'("api[_-]?key"\s*:\s*")[^"]+(")', re.I), r"\1" + REDACTED + r"\2"),
     (re.compile(r'("token"\s*:\s*")[^"]+(")', re.I), r"\1" + REDACTED + r"\2"),
     (re.compile(r'("secret"\s*:\s*")[^"]+(")', re.I), r"\1" + REDACTED + r"\2"),
-    (re.compile(r'\b(sk|pk|ghp|gho|ghu|ghs|glpat|xoxb|xoxp|AKIA)[_-][A-Za-z0-9_\-]{16,}\b'), REDACTED),
-    (re.compile(r'\bAIza[0-9A-Za-z\-_]{20,}\b'), REDACTED),  # Google API keys
+    (
+        re.compile(
+            r"\b(sk|pk|ghp|gho|ghu|ghs|glpat|xoxb|xoxp|AKIA)[_-][A-Za-z0-9_\-]{16,}\b"
+        ),
+        REDACTED,
+    ),
+    (re.compile(r"\bAIza[0-9A-Za-z\-_]{20,}\b"), REDACTED),  # Google API keys
 ]
 
-EMAIL_RE = re.compile(r'[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+')
+EMAIL_RE = re.compile(r"[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+")
+HOME_PATH_RE = re.compile(r"/Users/[A-Za-z0-9._-]+")
 
 
 def redact_text(text: str, *, strip_emails: bool = False) -> str:
     for pat, repl in TOKEN_PATTERNS:
         text = pat.sub(repl, text)
+    text = HOME_PATH_RE.sub("$HOME", text)
     if strip_emails:
         text = EMAIL_RE.sub(REDACTED + "@example.com", text)
     return text
@@ -147,7 +169,11 @@ def sanitize_claude_settings(data: dict) -> dict:
                         headers[hk] = REDACTED
             # local URLs leak machine state sometimes; keep domain only
             url = server.get("url")
-            if isinstance(url, str) and "127.0.0.1" not in url and "localhost" not in url:
+            if (
+                isinstance(url, str)
+                and "127.0.0.1" not in url
+                and "localhost" not in url
+            ):
                 # keep remote URLs as-is; scan pass will flag if suspicious
                 pass
     return data
@@ -156,6 +182,7 @@ def sanitize_claude_settings(data: dict) -> dict:
 # ---------------------------------------------------------------------------
 # Copy engine
 # ---------------------------------------------------------------------------
+
 
 def within_home(path: Path) -> bool:
     try:
@@ -243,6 +270,7 @@ def copy_tree(src: Path, dst: Path, deny: set[str]) -> None:
 # ---------------------------------------------------------------------------
 # Main
 # ---------------------------------------------------------------------------
+
 
 def export_claude() -> None:
     if DST_CLAUDE.exists():

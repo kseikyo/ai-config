@@ -26,7 +26,7 @@ When `/ls:shapeup` is invoked:
 
 **Step 1**: Detect starting phase
 ```bash
-PHASE=$(/Users/lucassierota/.claude/commands/ls/scripts/phase-detect.sh "[user input]")
+PHASE=$($HOME/.claude/commands/ls/scripts/phase-detect.sh "[user input]")
 ```
 
 **Step 2**: Initialize phase tracking
@@ -318,7 +318,7 @@ CAPTURE → QUALIFY → APPETITE → SHAPE → DE-RISK → PITCH → BET → BUI
 
 2. Create beads hierarchy:
 ```bash
-echo '[GENERATED_JSON]' | /Users/lucassierota/.claude/commands/ls/scripts/beads-create.sh -
+echo '[GENERATED_JSON]' | $HOME/.claude/commands/ls/scripts/beads-create.sh -
 ```
 
 3. Show created hierarchy to user
@@ -342,7 +342,7 @@ echo '[GENERATED_JSON]' | /Users/lucassierota/.claude/commands/ls/scripts/beads-
 1. Display BUILD banner
 2. **Immediately show hill chart**:
 ```bash
-/Users/lucassierota/.claude/commands/ls/scripts/hill-chart.sh
+$HOME/.claude/commands/ls/scripts/hill-chart.sh
 ```
 
 **BUILD GUIDANCE**:
@@ -366,7 +366,7 @@ echo '[GENERATED_JSON]' | /Users/lucassierota/.claude/commands/ls/scripts/beads-
 **PROGRESS CHECK-INS**:
 When user asks for status/progress, run:
 ```bash
-/Users/lucassierota/.claude/commands/ls/scripts/hill-chart.sh
+$HOME/.claude/commands/ls/scripts/hill-chart.sh
 ```
 
 **END OF CYCLE**:
@@ -424,7 +424,7 @@ When user asks for status/progress, run:
 | hill-chart.sh | BUILD entry + progress | `scripts/hill-chart.sh` |
 | repo-detect.sh | Before beads init | `scripts/repo-detect.sh` |
 
-Scripts location: `/Users/lucassierota/.claude/commands/ls/scripts/`
+Scripts location: `$HOME/.claude/commands/ls/scripts/`
 
 ---
 

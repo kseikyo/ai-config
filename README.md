@@ -94,7 +94,7 @@ a redacted version, and audit each skill's `SKILL.md` for project names.
 
 ```bash
 # create a private GitHub repo WITHOUT pushing yet:
-#   gh repo create lucassierota/ai-config --private --source . --remote origin
+#   gh repo create <you>/ai-config --private --source . --remote origin
 # then push:
 #   git push -u origin main
 ```
