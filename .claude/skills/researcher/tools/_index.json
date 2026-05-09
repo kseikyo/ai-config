@@ -28,8 +28,8 @@
       "Use this instead of fetch_url when you want content you can summarize directly",
       "Automatically falls back to local extraction if Jina Reader is unreachable"
     ],
-    "runs": 83,
-    "successes": 83,
+    "runs": 181,
+    "successes": 180,
     "createdAt": "2026-04-10T00:00:00.000Z"
   },
   {
@@ -40,8 +40,8 @@
       "Returns which provider served the result so you can weight result quality",
       "Use provider='exa' for semantic 'find pages like X' search, 'perplexity' when you want an answer + citations"
     ],
-    "runs": 50,
-    "successes": 50,
+    "runs": 92,
+    "successes": 92,
     "createdAt": "2026-04-10T00:00:00.000Z"
   }
 ]

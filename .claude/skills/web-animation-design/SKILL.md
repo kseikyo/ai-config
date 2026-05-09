@@ -11,7 +11,11 @@ A comprehensive guide for creating animations that feel right, based on Emil Kow
 
 ## Initial Response
 
-When this skill is first invoked without a specific question, do not provide any other information until the user asks a question.
+When this skill is first invoked without a specific question, respond only with:
+
+> I'm ready to help you with animations based on Emil Kowalski's animations.dev course.
+
+Do not provide any other information until the user asks a question.
 
 ## Review Format (Required)
 
@@ -223,7 +227,7 @@ Only animate `transform` and `opacity`. These skip layout and paint stages, runn
 - Use refs to update styles directly instead of state
 - Re-renders on every frame = dropped frames
 
-**Motion:**
+**Framer Motion:**
 
 ```jsx
 // Hardware accelerated (transform as string)
@@ -236,7 +240,7 @@ Only animate `transform` and `opacity`. These skip layout and paint stages, runn
 ### CSS vs. JavaScript
 
 - CSS animations run off main thread (smoother under load)
-- JS animations (Motion, React Spring) use `requestAnimationFrame`
+- JS animations (Framer Motion, React Spring) use `requestAnimationFrame`
 - CSS better for simple, predetermined animations
 - JS better for dynamic, interruptible animations
 
@@ -267,10 +271,10 @@ Whenever you add an animation, also add a media query to disable it:
 - No exceptions for opacity or color - disable all animations
 - Show play buttons instead of autoplay videos
 
-### Motion Implementation
+### Framer Motion Implementation
 
 ```jsx
-import { useReducedMotion } from "motion";
+import { useReducedMotion } from "framer-motion";
 
 function Component() {
   const shouldReduceMotion = useReducedMotion();
