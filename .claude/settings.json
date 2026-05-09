@@ -202,15 +202,6 @@
     ],
     "PostToolUse": [
       {
-        "matcher": "Bash",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "bash ~/.claude/hooks/strip-claude-coauthor.sh"
-          }
-        ]
-      },
-      {
         "matcher": "Edit|Write|Bash",
         "hooks": [
           {
@@ -244,19 +235,11 @@
     "typescript-lsp@claude-plugins-official": true,
     "vscode-html-css@claude-code-lsps": true,
     "vtsls@claude-code-lsps": true,
-    "rust-analyzer-lsp@claude-plugins-official": true,
-    "caveman@caveman": true
-  },
-  "extraKnownMarketplaces": {
-    "caveman": {
-      "source": {
-        "source": "github",
-        "repo": "JuliusBrussee/caveman"
-      }
-    }
+    "rust-analyzer-lsp@claude-plugins-official": true
   },
   "effortLevel": "high",
   "promptSuggestionEnabled": false,
+  "skipAutoPermissionPrompt": true,
   "voiceEnabled": true,
   "mcpServers": {
     "mcp-agent-mail": {
