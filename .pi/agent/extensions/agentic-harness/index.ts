@@ -61,9 +61,11 @@ function findProjectRoot(fromDir: string): string | null {
 function detectProjectType(fromDir: string): ProjectType {
 	const root = findProjectRoot(fromDir);
 	if (!root) return "none";
-	if (existsSync(resolve(root, "pnpm-lock.yaml")) || existsSync(resolve(root, "package.json"))) return "pnpm";
-	if (existsSync(resolve(root, "uv.lock")) || existsSync(resolve(root, "pyproject.toml"))) return "uv";
+	if (existsSync(resolve(root, "pnpm-lock.yaml"))) return "pnpm";
+	if (existsSync(resolve(root, "uv.lock"))) return "uv";
 	if (existsSync(resolve(root, "Cargo.toml"))) return "cargo";
+	if (existsSync(resolve(root, "package.json"))) return "pnpm";
+	if (existsSync(resolve(root, "pyproject.toml"))) return "uv";
 	return "none";
 }
 
