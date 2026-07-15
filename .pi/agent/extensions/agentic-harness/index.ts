@@ -14,7 +14,7 @@
 import type { ExtensionAPI } from "@mariozechner/pi-coding-agent";
 import { isToolCallEventType } from "@mariozechner/pi-coding-agent";
 import { resolve, dirname, relative } from "node:path";
-import { existsSync } from "node:fs";
+import { existsSync, readFileSync } from "node:fs";
 
 // ─── Config ─────────────────────────────────────────────────────────────────
 
@@ -49,25 +49,49 @@ const DEFAULT_CONFIG: HarnessConfig = {
 
 type ProjectType = "pnpm" | "uv" | "cargo" | "none";
 
-function detectProjectType(fromDir: string): ProjectType {
+function findProjectRoot(fromDir: string): string | null {
 	let d = fromDir;
 	while (d !== "/" && d) {
-		if (existsSync(resolve(d, "pnpm-lock.yaml"))) return "pnpm";
-		if (existsSync(resolve(d, "uv.lock"))) return "uv";
-		if (existsSync(resolve(d, "Cargo.toml"))) return "cargo";
-		if (existsSync(resolve(d, "package.json"))) return "pnpm";
-		if (existsSync(resolve(d, "pyproject.toml"))) return "uv";
+		if (existsSync(resolve(d, "pnpm-lock.yaml")) || existsSync(resolve(d, "uv.lock")) || existsSync(resolve(d, "Cargo.toml")) || existsSync(resolve(d, "package.json")) || existsSync(resolve(d, "pyproject.toml"))) return d;
 		d = dirname(d);
 	}
+	return null;
+}
+
+function detectProjectType(fromDir: string): ProjectType {
+	const root = findProjectRoot(fromDir);
+	if (!root) return "none";
+	if (existsSync(resolve(root, "pnpm-lock.yaml")) || existsSync(resolve(root, "package.json"))) return "pnpm";
+	if (existsSync(resolve(root, "uv.lock")) || existsSync(resolve(root, "pyproject.toml"))) return "uv";
+	if (existsSync(resolve(root, "Cargo.toml"))) return "cargo";
 	return "none";
 }
 
-function getFallbackTypechecker(projectType: ProjectType): string | null {
+function hasConfiguredPythonTypechecker(projectRoot: string, checker: "mypy" | "pyright"): boolean {
+	if (checker === "mypy" && (existsSync(resolve(projectRoot, "mypy.ini")) || existsSync(resolve(projectRoot, ".mypy.ini")))) return true;
+	if (checker === "pyright" && existsSync(resolve(projectRoot, "pyrightconfig.json"))) return true;
+
+	const pyproject = resolve(projectRoot, "pyproject.toml");
+	if (!existsSync(pyproject)) return false;
+
+	try {
+		const content = readFileSync(pyproject, "utf8");
+		return checker === "mypy"
+			? /^\s*\[tool\.mypy\]/m.test(content) || /["']mypy[<>=!~\s]/.test(content)
+			: /^\s*\[tool\.pyright\]/m.test(content) || /["'](?:based)?pyright[<>=!~\s]/.test(content);
+	} catch {
+		return false;
+	}
+}
+
+function getFallbackTypechecker(projectType: ProjectType, projectRoot: string): string | null {
 	switch (projectType) {
 		case "pnpm":
-			return "pnpm exec tsc --noEmit";
+			return existsSync(resolve(projectRoot, "tsconfig.json")) ? "pnpm exec tsc --noEmit" : null;
 		case "uv":
-			return "uv run mypy";
+			if (hasConfiguredPythonTypechecker(projectRoot, "mypy")) return "uv run mypy";
+			if (hasConfiguredPythonTypechecker(projectRoot, "pyright")) return "uv run pyright";
+			return null;
 		case "cargo":
 			return "cargo check";
 		default:
@@ -288,8 +312,10 @@ export default function (pi: ExtensionAPI) {
 		if (!config.fallbackTypecheck) return;
 
 		const firstFile = files[0];
-		const projectType = detectProjectType(dirname(firstFile));
-		const checker = getFallbackTypechecker(projectType);
+		const projectRoot = findProjectRoot(dirname(firstFile));
+		if (!projectRoot) return;
+		const projectType = detectProjectType(projectRoot);
+		const checker = getFallbackTypechecker(projectType, projectRoot);
 		if (!checker) return;
 
 		try {
