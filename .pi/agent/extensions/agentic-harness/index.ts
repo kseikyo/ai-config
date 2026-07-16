@@ -49,24 +49,53 @@ const DEFAULT_CONFIG: HarnessConfig = {
 
 type ProjectType = "pnpm" | "uv" | "cargo" | "none";
 
-function findProjectRoot(fromDir: string): string | null {
-	let d = fromDir;
-	while (d !== "/" && d) {
-		if (existsSync(resolve(d, "pnpm-lock.yaml")) || existsSync(resolve(d, "uv.lock")) || existsSync(resolve(d, "Cargo.toml")) || existsSync(resolve(d, "package.json")) || existsSync(resolve(d, "pyproject.toml"))) return d;
-		d = dirname(d);
-	}
+interface Project {
+	root: string;
+	type: Exclude<ProjectType, "none">;
+}
+
+function projectAt(dir: string): Project | null {
+	if (existsSync(resolve(dir, "pnpm-lock.yaml"))) return { root: dir, type: "pnpm" };
+	if (existsSync(resolve(dir, "uv.lock"))) return { root: dir, type: "uv" };
+	if (existsSync(resolve(dir, "Cargo.toml"))) return { root: dir, type: "cargo" };
+	if (existsSync(resolve(dir, "package.json"))) return { root: dir, type: "pnpm" };
+	if (existsSync(resolve(dir, "pyproject.toml"))) return { root: dir, type: "uv" };
 	return null;
 }
 
+function cargoWorkspaceAt(dir: string): boolean {
+	const manifest = resolve(dir, "Cargo.toml");
+	if (!existsSync(manifest)) return false;
+	try {
+		return /^\s*\[workspace\]/m.test(readFileSync(manifest, "utf8"));
+	} catch {
+		return false;
+	}
+}
+
+// Resolve the edited file's nearest project. A matching workspace ancestor owns
+// diagnostics; a workspace for another ecosystem does not.
+function findProject(fromDir: string): Project | null {
+	let d = fromDir;
+	let nearest: Project | null = null;
+	while (d !== "/" && d) {
+		const project = projectAt(d);
+		if (!nearest && project) nearest = project;
+
+		if (nearest?.type === "pnpm" && (existsSync(resolve(d, "pnpm-workspace.yaml")) || existsSync(resolve(d, "pnpm-lock.yaml")))) return { root: d, type: "pnpm" };
+		if (nearest?.type === "cargo" && cargoWorkspaceAt(d)) return { root: d, type: "cargo" };
+		if (existsSync(resolve(d, ".git"))) return nearest;
+		d = dirname(d);
+	}
+	return nearest;
+}
+
+function findProjectRoot(fromDir: string): string | null {
+	return findProject(fromDir)?.root ?? null;
+}
+
 function detectProjectType(fromDir: string): ProjectType {
-	const root = findProjectRoot(fromDir);
-	if (!root) return "none";
-	if (existsSync(resolve(root, "pnpm-lock.yaml"))) return "pnpm";
-	if (existsSync(resolve(root, "uv.lock"))) return "uv";
-	if (existsSync(resolve(root, "Cargo.toml"))) return "cargo";
-	if (existsSync(resolve(root, "package.json"))) return "pnpm";
-	if (existsSync(resolve(root, "pyproject.toml"))) return "uv";
-	return "none";
+	return findProject(fromDir)?.type ?? "none";
 }
 
 function hasConfiguredPythonTypechecker(projectRoot: string, checker: "mypy" | "pyright"): boolean {
@@ -219,8 +248,15 @@ export default function (pi: ExtensionAPI) {
 		const files = [...editedFiles];
 		editedFiles.clear();
 
+		// AFT's extension API has no cwd/root argument. Only invoke its CLI when
+		// the session itself is the sole diagnostic root; otherwise it would infer
+		// tooling from the parent session directory.
+		const editedProjectRoots = new Set(
+			files.map((file) => findProjectRoot(dirname(file))).filter((root): root is string => root !== null),
+		);
+
 		// ── Try AFT lsp_diagnostics first ──
-		if (hasAftDiagnostics(pi)) {
+		if (editedProjectRoots.size === 1 && editedProjectRoots.has(ctx.cwd) && hasAftDiagnostics(pi)) {
 			try {
 				// Deduce unique directories to check — more efficient than per-file
 				const dirs = [...new Set(files.map((f) => dirname(f)))];
