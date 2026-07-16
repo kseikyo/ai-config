@@ -86,16 +86,18 @@ function hasConfiguredPythonTypechecker(projectRoot: string, checker: "mypy" | "
 	}
 }
 
-function getFallbackTypechecker(projectType: ProjectType, projectRoot: string): string | null {
+type FallbackChecker = readonly [command: string, ...args: string[]];
+
+function getFallbackTypechecker(projectType: ProjectType, projectRoot: string): FallbackChecker | null {
 	switch (projectType) {
 		case "pnpm":
-			return existsSync(resolve(projectRoot, "tsconfig.json")) ? "pnpm exec tsc --noEmit" : null;
+			return existsSync(resolve(projectRoot, "tsconfig.json")) ? ["pnpm", "exec", "tsc", "--noEmit"] : null;
 		case "uv":
-			if (hasConfiguredPythonTypechecker(projectRoot, "mypy")) return "uv run mypy";
-			if (hasConfiguredPythonTypechecker(projectRoot, "pyright")) return "uv run pyright";
+			if (hasConfiguredPythonTypechecker(projectRoot, "mypy")) return ["uv", "run", "mypy"];
+			if (hasConfiguredPythonTypechecker(projectRoot, "pyright")) return ["uv", "run", "pyright"];
 			return null;
 		case "cargo":
-			return "cargo check";
+			return ["cargo", "check"];
 		default:
 			return null;
 	}
@@ -313,40 +315,46 @@ export default function (pi: ExtensionAPI) {
 		// ── Fallback: traditional typecheck when AFT is unavailable ──
 		if (!config.fallbackTypecheck) return;
 
-		const firstFile = files[0];
-		const projectRoot = findProjectRoot(dirname(firstFile));
-		if (!projectRoot) return;
-		const projectType = detectProjectType(projectRoot);
-		const checker = getFallbackTypechecker(projectType, projectRoot);
-		if (!checker) return;
+		const projectFiles = new Map<string, string[]>();
+		for (const file of files) {
+			const projectRoot = findProjectRoot(dirname(file));
+			if (!projectRoot) continue;
+			const group = projectFiles.get(projectRoot) ?? [];
+			group.push(file);
+			projectFiles.set(projectRoot, group);
+		}
 
-		try {
-			let cmd: string;
-			if (projectType === "uv") {
-				cmd = `${checker} ${files.join(" ")}`;
-			} else {
-				cmd = checker;
-			}
+		const findings: string[] = [];
+		for (const [projectRoot, scopedFiles] of projectFiles) {
+			const projectType = detectProjectType(projectRoot);
+			const checker = getFallbackTypechecker(projectType, projectRoot);
+			if (!checker) continue;
 
-			const { stdout, stderr, code } = await pi.exec("bash", ["-c", cmd], {
-				timeout: config.diagnosticsTimeout,
-			});
-
-			if (code !== 0) {
-				const output = (stdout + stderr).trim();
-				if (output) {
-					pi.sendMessage(
-						{
-							customType: "agentic-harness-diagnostics",
-							content: `⚠️ **Typecheck findings** (${files.length} file${files.length === 1 ? "" : "s"} edited this turn):\n\n\`\`\`\n${output.slice(0, 2000)}\n\`\`\``,
-							display: true,
-						},
-						{ deliverAs: "nextTurn" },
-					);
+			try {
+				const args = projectType === "uv" ? [...checker, ...scopedFiles] : [...checker];
+				const { stdout, stderr, code } = await pi.exec(
+					"bash",
+					["-c", "cd -- \"$1\" && shift && exec \"$@\"", "agentic-harness", projectRoot, ...args],
+					{ timeout: config.diagnosticsTimeout },
+				);
+				if (code !== 0) {
+					const output = (stdout + stderr).trim();
+					if (output) findings.push(projectFiles.size > 1 ? `${projectRoot}:\n${output}` : output);
 				}
+			} catch {
+				/* fail open */
 			}
-		} catch {
-			/* fail open */
+		}
+
+		if (findings.length > 0) {
+			pi.sendMessage(
+				{
+					customType: "agentic-harness-diagnostics",
+					content: `⚠️ **Typecheck findings** (${files.length} file${files.length === 1 ? "" : "s"} edited this turn):\n\n\`\`\`\n${findings.join("\n\n").slice(0, 2000)}\n\`\`\``,
+					display: true,
+				},
+				{ deliverAs: "nextTurn" },
+			);
 		}
 	});
 
